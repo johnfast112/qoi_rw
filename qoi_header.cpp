@@ -8,6 +8,7 @@ bool read_qoi_header(const char* filename, QoiHeader* header){
   std::ifstream file;
   file.open(filename);
   if(!file.is_open()){
+    std::cerr << filename << " - No loadable images specified.\n";
     return false;
   }
   file.seekg(0, std::ios::beg);
@@ -34,6 +35,8 @@ bool read_qoi_header(const char* filename, QoiHeader* header){
     static_cast<uint32_t>(buffer[1])<<16 | 
     static_cast<uint32_t>(buffer[2])<<8 | 
     static_cast<uint32_t>(buffer[3]);
+  std::cout << "Image width: " << header->width << '\n';
+  std::cout << "Image height: " << header->height << '\n';
 
   //3 = RGB, 4 = RGBA
   file.read(reinterpret_cast<char*>(&header->channels), sizeof(uint8_t));

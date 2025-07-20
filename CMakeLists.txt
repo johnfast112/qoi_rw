@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
-project(qoi_rw)
+project(qoi_rw C CXX)
+
+find_package(SDL3 REQUIRED)
 
 # set the output directory for built objects.
 # This makes sure that the dynamic library goes into the build directory automatically.

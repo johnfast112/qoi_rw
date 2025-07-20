@@ -24,8 +24,12 @@ After installing MSYS2 run `pacman -Syu` until you recieve the "there is nothing
   
 Run the following command to install all the necessary build tools:
 ```
-pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-sdl3 \
-git cmake
+pacman -S mingw-w64-ucrt-x86_64-gcc \
+mingw-w64-ucrt-x86_64-ninja \
+mingw-w64-ucrt-x86_64-cmake \
+mingw-w64-ucrt-x86_64-sdl3 \
+git \
+cmake
 ```
 Build the program with:
 ```
@@ -33,7 +37,7 @@ mkdir build
 cmake -S . -B build
 cmake --build build
 ```
-To be able to use the program as a standalone executable, the following dll files must be present in the folder: `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll`, `SDL3.dll`  
+To be able to use the program outside of msys2, the following .dll files must be present in the folder: `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll`, `SDL3.dll`  
   
 The first three should already be on your system from installing msys2, and the following command should copy them to your build directory:
 ```
@@ -44,6 +48,9 @@ If this fails you can manually search for them with
 find / -name "libgcc_s_seh-1.dll" -o -name "libstdc++-6.dll" -o -name "libwinpthread-1.dll"
 ```
 
-The last one will be available under the [releases](https://github.com/libsdl-org/SDL/releases) page in the SDL git repo. Find and download the newest release with the name most similar to `SDL3-devel-X.X.XX-mingw.tar.gz` (the .zip also works) and decompress it. Inside the `SDL3-devel-X.X.XX-mingw` directory you will find a `i686-w64-mingw32` directory and a `x86_64-w64-mingw32` directory. If you are on a 32-bit system navigate to the `i686` directory, otherwise use the `x86_64` one. Copy the `SDL3.dll` file from the bin folder to your original build directory.  
+The last one will be available under the [releases](https://github.com/libsdl-org/SDL/releases) page in the SDL git repo. Find and download the newest release with the name most similar to `SDL3-devel-X.X.XX-mingw.tar.gz` (the .zip also works) and decompress it. Inside the `SDL3-devel-X.X.XX-mingw` directory you will find a `i686-w64-mingw32` directory and a `x86_64-w64-mingw32` directory. If you are on a 32-bit system navigate to the `i686` directory, otherwise use the `x86_64` one. Copy the `SDL3.dll` file from the bin folder to your original build directory. The following script simply automates this process:
+```
+sh download_SDL3_dll.sh
+```
   
 The `qoi_rw.exe` executable should now be accessable by applications outside of msys2, such as cmd.exe or windows shortcuts

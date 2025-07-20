@@ -6,8 +6,8 @@ tar zxf SDL3-devel.tar.gz -C SDL3-devel --strip-components=1
 
 read -p "Are you on a 32-bit system? (If unsure you're probably on a 64-bit) [Y/n] " yn
 case $yn in 
-  [Yy]* ) cp -v SDL3-devel/i686*/bin/SDL3.dll ./build
-  * ) cp -v SDL3-devel/x86_64*/bin/SDL3.dll ./build
+  [Yy]* ) cp -v SDL3-devel/i686*/bin/SDL3.dll ./build; break;;
+  * ) cp -v SDL3-devel/x86_64*/bin/SDL3.dll ./build; break;;
 esac
 
 rm -rf SDL3-devel{,.tar.gz}

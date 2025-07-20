@@ -1,16 +1,16 @@
 #include <iostream>
-#include "qoi_header.h"
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_main.h"
+
+#include "qoi_header.h"
 #include <fstream>
 
-//Global constants
+//Globals
 uint32_t* gFrameBuffer; //Array of pixels
 SDL_Window* gSDLWindow;
 SDL_Renderer* gSDLRenderer;
 SDL_Texture* gSDLTexture;
-static int gDone; //Flag for terminating the program (optional)
-qoi_header header;
+QoiHeader header; //Holds header information about file
 
 //Update our texture and render the new frame
 bool update(){
@@ -40,79 +40,14 @@ bool update(){
   return true;
 }
 
-//Main Loop
-void loop(){
-  if(!update()){ //If we're done we set gDone to 1
-    gDone = 1;
-  }
-}
-
-bool readQiv(const char* filename){
-  std::ifstream file;
-  file.open(filename);
-  if(!file.is_open()){
-    return false;
-  }
-
-  //get filesize TODO: Maybe remove
-  file.seekg(0, std::ios::end);
-  auto end = file.tellg();
-
-  //Seek to start of file
-  file.seekg(0, std::ios::beg);
-  std::cout << "pos: " << file.tellg() << '\n';
-
-  std::cout << "size: " << sizeof(header) << '\n';
-  //Qoi header is 14 bytes long
-  //4 magic bytes qoif
-  file.read(header.magic, 4);
-  std::cout << header.magic[0] << header.magic[1] << header.magic[2] << header.magic[3] << '\n';
-  if(header.magic[0] != 'q' || header.magic[1] != 'o' || header.magic[2] != 'i' || header.magic[3] != 'f'){
-    std::cerr << filename << " - Does not look like a qoi image (magic bytes missing)\n";
-    return false;
-  }
-
-  char buffer[sizeof(uint32_t)]; //uint32_t size char buffer to make filereads easier
-
-  //Image width and height in pixels
-  file.read(buffer, sizeof(uint32_t));
-  header.width = (uint32_t)buffer[0]<<24 | (uint32_t)buffer[1]<<16 | (uint32_t)buffer[2]<<8 | (uint32_t)buffer[3];
-  file.read(buffer, sizeof(uint32_t));
-  header.height = (uint32_t)buffer[0]<<24 | (uint32_t)buffer[1]<<16 | (uint32_t)buffer[2]<<8 | (uint32_t)buffer[3];
-  std::cout << "Image width: " << header.width << '\n';
-  std::cout << "Image height: " << header.height << '\n';
-
-  //3 = RGB, 4 = RGBA
-  file.read(reinterpret_cast<char*>(&header.channels), sizeof(uint8_t));
-  std::cout << "Channels: ";
-  switch(header.channels){
-    case 3: std::cout << "RGB"; break;
-    case 4: std::cout << "RGBA"; break;
-    default: std::cout << "Invalid channels in header"; return false;
-  }
-  std::cout << '\n';
-
-  //0 = sRGB with linear alpha, 1 = all channels linear
-  file.read(reinterpret_cast<char*>(&header.colorspace), sizeof(uint8_t));
-  std::cout << "Colorspace: ";
-  switch(header.colorspace){
-    case 0: std::cout << "sRGB with linear alpha"; break;
-    case 1: std::cout << "all channels linear"; break;
-    default: std::cout << "Invalid colorspace in header"; return false;
-  }
-  std::cout << '\n';
-
-  std::cout << "pos: " << file.tellg() << '\n';
-
-
-  file.close();
-
-  return true;
-}
-
 int main(int argc, char** argv){
-  //Read file
-  if(!readQiv(argv[1])){
+  if(argc <2){
+    std::cerr << "Requires argument\n";
+    return -1;
+  }
+
+  //Read qoi header
+  if(!read_qoi_header(argv[1], &header)){
     return -1;
   }
 
@@ -134,11 +69,8 @@ int main(int argc, char** argv){
     return -1;
   }
 
-  gDone = 0;
-
   //Main Loop
-  while(!gDone){
-    loop();
+  while(update()){
   }
 
   //Cleanup in reverse order

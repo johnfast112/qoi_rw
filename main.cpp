@@ -59,7 +59,7 @@ int main(int argc, char** argv){
   }
 
   gFrameBuffer = new uint32_t[header.width * header.height]{0xffffffff};
-  gSDLWindow = SDL_CreateWindow("SDL3 window", header.width, header.height, 0);
+  gSDLWindow = SDL_CreateWindow(argv[1], header.width, header.height, 0);
   gSDLRenderer = SDL_CreateRenderer(gSDLWindow, NULL); //Pointer to window, name of driver (or NULL for auto)
   gSDLTexture = SDL_CreateTexture(
     gSDLRenderer, //Pointer to renderer

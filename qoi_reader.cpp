@@ -3,7 +3,7 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_main.h"
 
-#include "qoi_header.h"
+#include "qoi_header.h" //TODO: Maybe unused
 #include "qoi_reader.h"
 #include <cstdint>
 #include <fstream>
@@ -29,7 +29,7 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
 
   op = read_tag(tag);
 
-  for(int i{0}; i<335; ++i){
+  while(frame_buffer_index<header->width*header->height){
     //SDL_Delay(20);
     std::cout << "index " << file.tellg() << ": ";
     file.read(reinterpret_cast<char*>(&tag), 1);
@@ -55,13 +55,31 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
         prev_px = frame_buffer[frame_buffer_index]; //Copy most recent pixel
         frame_buffer_index++;
         break;
-      case QOI_OP::DIFF: break;
+      case QOI_OP::DIFF: 
+        frame_buffer[frame_buffer_index] = (
+          ( ( ( ((prev_px & 0xff00'0000)>>24) + ( ((tag & 0b0011'0000)>>4)-2) ) % 256 )<<24)| //Red
+          ( ( ( ((prev_px & 0x00ff'0000)>>16) + ( ((tag & 0b0000'1100)>>2)-2) ) % 256 )<<16)| //Green
+          ( ( ( ((prev_px & 0x0000'ff00)>>8 ) + ( ((tag & 0b0000'0011)   )-2) ) % 256 )<<8 )| //Blue
+          (prev_px & 0x0000'00ff)
+        );
+
+        index_position = ( //Hash function for the index //TODO: Make this an inline function or something
+          (frame_buffer[frame_buffer_index] & 0xff00'0000 /*r*/)*3 +
+          (frame_buffer[frame_buffer_index] & 0x00ff'0000 /*g*/)*5 +
+          (frame_buffer[frame_buffer_index] & 0x0000'ff00 /*b*/)*7 +
+          (frame_buffer[frame_buffer_index] & 0x0000'00ff /*a*/)*11
+        ) % 64;
+        array[index_position] = frame_buffer[frame_buffer_index]; //Copy our previously seen pixel into our array at the index_position calculated by the hash function
+        prev_px = frame_buffer[frame_buffer_index];
+        frame_buffer_index++;
+        break;
       case QOI_OP::LUMA:
         uint8_t byte;
         int8_t dr, dg, db;
         int8_t cur_r, cur_g, cur_b;
         int8_t dr_dg, db_dg;
 
+        //Green
         dg = (tag & 0b0001'1111)*( (tag & 0b0010'0000) ? (1) : (-1)); //Diff green
         std::cout << "dg: " << dg << '\n';
         std::cout << "dg: " << (tag & 0b0001'1111)*( (tag & 0b0010'0000) ? (1) : (-1)) << '\n';
@@ -70,6 +88,7 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
         std::cout << "cur_g: " << cur_g << '\n';
         std::cout << "cur_g: " << ( ( (prev_px & 0x00ff'0000)>>16 ) - dg ) % 256 << '\n';
 
+        //Red
         file.read(reinterpret_cast<char*>(&byte), 1);
         dr_dg = ((byte>>4) & 0b0000'0111)*( (byte & 0b1000'0000) ? (1) : (-1)); //dr - dg
         std::cout << "dr_dg: " << dr_dg << '\n';
@@ -81,13 +100,17 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
         std::cout << "cur_r: " << cur_r << '\n';
         std::cout << "cur_r: " << ( ((prev_px & 0xff00'0000)>>24) + dr) % 256 << '\n';
 
-        //cur_r = (dr - (prev_px & 0xff00'0000)>>24) - (dg - (prev_px & 0x00ff'0000)>>16) % 256); //Current red
-
-        //std::cout << "b: " << (byte & 0b0000'0111)*( (byte & 0b0000'1000) ? (1) : (-1)) << '\n';
-        //db = (byte & 0b0000'0111)*( (byte & 0b0000'1000) ? (1) : (-1));
-        //std::cout << "dr_dg: " << ( (dr - (prev_px & 0xff00'0000)>>24) - (dg - (prev_px & 0x00ff'0000)>>16) % 256) << '\n';
-        //std::cout << "db_dg: " << ( (db - (prev_px & 0x0000'ff00)>>24) - (dg - (prev_px & 0x00ff'0000)>>16) % 256) << '\n';
-        //db_dg = ( (db - (prev_px & 0x0000'ff00)>>24) - (dg - (prev_px & 0x00ff'0000)>>16) % 256);
+        //Blue
+        file.read(reinterpret_cast<char*>(&byte), 1);
+        db_dg = ((byte) & 0b0000'0111)*( (byte & 0b0000'1000) ? (1) : (-1)); //db - dg
+        std::cout << "db_dg: " << db_dg << '\n';
+        std::cout << "db_dg: " << ((byte) & 0b0000'0111)*( (byte & 0b0000'1000) ? (1) : (-1)) << '\n';
+        db = db_dg + dg; //Diff blue
+        std::cout << "db: " << db << '\n';
+        std::cout << "db: " << db_dg + dg << '\n';
+        cur_b = ( ((prev_px & 0x0000'ff00)>>8) + db) % 256; //Current blue
+        std::cout << "cur_b: " << cur_b << '\n';
+        std::cout << "cur_b: " << ( ((prev_px & 0x0000'ff00)>>8) + db) % 256 << '\n';
 
         frame_buffer[frame_buffer_index] = (
           cur_r<<24 |
@@ -157,3 +180,5 @@ QOI_OP read_tag(const uint8_t tag){
 
   return QOI_OP::MAX_TAG;
 }
+
+//TODO: Store pixel function

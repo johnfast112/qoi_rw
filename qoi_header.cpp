@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-bool read_qoi_header(const char* filename, QoiHeader* header){
+bool read_qoi_header(const char* filename, Qoi_Header* header){
   //Open file
   std::ifstream file;
   file.open(filename);

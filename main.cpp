@@ -1,16 +1,18 @@
-#include <iostream>
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_main.h"
 
 #include "qoi_header.h"
-#include <fstream>
+#include "qoi_reader.h"
+
+#include <iostream>
+#include <cstdint>
 
 //Globals
 uint32_t* gFrameBuffer; //Array of pixels
 SDL_Window* gSDLWindow;
 SDL_Renderer* gSDLRenderer;
 SDL_Texture* gSDLTexture;
-QoiHeader header; //Holds header information about file
+Qoi_Header header; //Holds header information about file
 
 //Update our texture and render the new frame
 bool update(){
@@ -35,7 +37,7 @@ bool update(){
   SDL_UnlockTexture(gSDLTexture);
   SDL_RenderTexture(gSDLRenderer, gSDLTexture, NULL, NULL); //NULLs are for rects being entire texture/target
   SDL_RenderPresent(gSDLRenderer); //Update the screen
-  //SDL_Delay(1); //Sleep this many milliseconds
+  SDL_Delay(1); //Sleep this many milliseconds
 
   return true;
 }
@@ -56,17 +58,21 @@ int main(int argc, char** argv){
     return -1;
   }
 
-  gFrameBuffer = new uint32_t[header.width * header.height];
+  gFrameBuffer = new uint32_t[header.width * header.height]{0xffffffff};
   gSDLWindow = SDL_CreateWindow("SDL3 window", header.width, header.height, 0);
   gSDLRenderer = SDL_CreateRenderer(gSDLWindow, NULL); //Pointer to window, name of driver (or NULL for auto)
   gSDLTexture = SDL_CreateTexture(
     gSDLRenderer, //Pointer to renderer
-    SDL_PIXELFORMAT_ARGB8888, //Format = ARGB with 8 bit values for each
+    SDL_PIXELFORMAT_RGBA8888, //Format = RGBA with 8 bit values for each
     SDL_TEXTUREACCESS_STREAMING, //Access pattern
     header.width, header.height);
 
   if(!gFrameBuffer || !gSDLWindow || !gSDLRenderer || !gSDLTexture){ //Something is broken
     return -1;
+  }
+
+  if(!read_qoi(argv[1], gFrameBuffer, &header)){
+    std::cerr << "There was an error reading the file so the final image might turn out wrong\n";
   }
 
   //Main Loop

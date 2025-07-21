@@ -16,6 +16,7 @@ add_executable(qoi_rw)
 
 target_sources(qoi_rw
 PUBLIC qoi_header.cpp
+PUBLIC qoi_reader.cpp
 PUBLIC main.cpp)
 
 # Link to the actual SDL3 library.

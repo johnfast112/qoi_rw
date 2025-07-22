@@ -1,5 +1,4 @@
 #include "qoi_header.h"
-
 #include <fstream>
 #include <iostream>
 
@@ -20,21 +19,23 @@ bool read_qoi_header(const char* filename, Qoi_Header* header){
     return false;
   }
 
-  char buffer[sizeof(uint32_t)]; //uint32_t size char buffer to make filereads easier
-
+  char buffer[4];
   //Image width and height in pixels
-  file.read(buffer, sizeof(uint32_t));
-  header->width = //Shift each byte to appropriate location
-    static_cast<uint32_t>(buffer[0])<<24 | 
-    static_cast<uint32_t>(buffer[1])<<16 | 
-    static_cast<uint32_t>(buffer[2])<<8 | 
-    static_cast<uint32_t>(buffer[3]);
-  file.read(buffer, sizeof(uint32_t));
-  header->height = //Shift each byte to appropriate location
-    static_cast<uint32_t>(buffer[0])<<24 | 
-    static_cast<uint32_t>(buffer[1])<<16 | 
-    static_cast<uint32_t>(buffer[2])<<8 | 
-    static_cast<uint32_t>(buffer[3]);
+  file.read(buffer, 4); //Width
+  header->width = (
+    ((buffer[0]<<24) & 0xff00'0000) |
+    ((buffer[1]<<16) & 0x00ff'0000) |
+    ((buffer[2]<<8) & 0x0000'ff00) |
+    ((buffer[3]) & 0x0000'00ff)
+  );
+  file.read(buffer, 4); //Height
+  header->height = (
+    ((buffer[0]<<24) & 0xff00'0000) |
+    ((buffer[1]<<16) & 0x00ff'0000) |
+    ((buffer[2]<<8) & 0x0000'ff00) |
+    ((buffer[3]) & 0x0000'00ff)
+  );
+
   std::cout << "Image width: " << header->width << '\n';
   std::cout << "Image height: " << header->height << '\n';
 

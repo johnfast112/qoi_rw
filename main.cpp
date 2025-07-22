@@ -26,6 +26,12 @@ bool update(){
     }
   }
 
+  SDL_Delay(1); //Sleep this many milliseconds
+
+  return true;
+}
+
+bool render(){
   char* pix; //Pointer to locked pixels / our texture
   int pitch; //This is the length of one row of locked pixels
 
@@ -37,7 +43,6 @@ bool update(){
   SDL_UnlockTexture(gSDLTexture);
   SDL_RenderTexture(gSDLRenderer, gSDLTexture, NULL, NULL); //NULLs are for rects being entire texture/target
   SDL_RenderPresent(gSDLRenderer); //Update the screen
-  SDL_Delay(1); //Sleep this many milliseconds
 
   return true;
 }
@@ -73,6 +78,10 @@ int main(int argc, char** argv){
 
   if(!read_qoi(argv[1], gFrameBuffer, &header)){
     std::cerr << "There was an error reading the file so the final image might turn out wrong\n";
+  }
+
+  if(!render()){
+    return -1;
   }
 
   //Main Loop

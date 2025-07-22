@@ -1,7 +1,5 @@
 #include <iostream> //TODO: This is just for testing
 #include <bitset>
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_main.h"
 
 #include "qoi_header.h" //TODO: Maybe unused
 #include "qoi_reader.h"

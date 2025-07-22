@@ -19,7 +19,7 @@ make
 An executable named qoi_rw will appear, and when supplied with a `.qoi` file as an argument will display it.
 
 ### For compiling on windows:
-I recommend installing [MSYS2](https://www.msys2.org/) to allow for a compilation process similar to that on a unix-like system. After installing MSYS2 run `pacman -Syu` until you recieve the "there is nothing to do" message. This is usually twice for me.  
+I recommend installing [MSYS2](https://www.msys2.org/) to allow for a compilation process similar to that on a unix-like system. After installing MSYS2 run `pacman -Syu` until you recieve the "there is nothing to do" message to update msys2 and eventually the package manager itself. This is usually twice for me.  
   
 Run the following command to install all the necessary build tools:
 ```
@@ -30,7 +30,7 @@ mingw-w64-ucrt-x86_64-sdl3 \
 git \
 cmake
 ```
-Clone the repo just like above and then compile the program with:
+Clone the repo just like [above](#cloning) and then compile the program with:
 ```
 mkdir build
 cmake -S . -B build

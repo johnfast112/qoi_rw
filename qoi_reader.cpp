@@ -1,7 +1,7 @@
-#include <iostream> //TODO: This is just for testing
+#include <iostream> //TODO: Make this optional
 #include <bitset>
 
-#include "qoi_header.h" //TODO: Maybe unused
+#include "qoi_header.h"
 #include "qoi_reader.h"
 #include <cstdint>
 #include <fstream>
@@ -9,7 +9,7 @@
 bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
   uint32_t prev_px{0x00'00'00'ff}; //Decoder starts with {r: 0, g: 0, b: 0, a: 255} as the previous pixel
   char px_buf[4]; //Array for buffer of rgba
-  uint32_t array[64]{0}; //Running array of previously seen pixel values
+  uint32_t array[64]{0}; //Running (zero-initialized) array of previously seen pixel values
   uint8_t tag; //Holds tag for current "chunk"
   QOI_OP op;
   int frame_buffer_index{0};
@@ -22,9 +22,10 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
   file.seekg(14, std::ios::beg); //Seek after header
 
   while(frame_buffer_index<header->width*header->height){
-  //for(int i{0}; i<294; ++i){
     std::cout << "index " << file.tellg();
     std::cout << " (pixel " << frame_buffer_index << "): ";
+
+    //Read 1 byte tag
     file.read(reinterpret_cast<char*>(&tag), 1);
     std::cout << std::bitset<8>(tag) << " == ";
 
@@ -39,6 +40,7 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
         frame_buffer_index++; //Increment pixel index
         std::cout << " r: " << ((prev_px>>24) & 0x0000'00ff) << " g: " << ((prev_px>>16) & 0x0000'00ff) << " b: " << ((prev_px>>8) & 0x0000'00ff) << " a: " << (prev_px & 0x0000'00ff) << " hash: " << calc_index_hash(prev_px); //Debug info
         break;
+
       case QOI_OP::RGBA: //Read the following 4 bytes as RGBA
         file.read(px_buf, 4); //Read
         prev_px = arr_to_px(px_buf); //Store as last pixel
@@ -47,15 +49,19 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
         frame_buffer_index++; //Increment pixel index
         std::cout << " r: " << ((prev_px>>24) & 0x0000'00ff) << " g: " << ((prev_px>>16) & 0x0000'00ff) << " b: " << ((prev_px>>8) & 0x0000'00ff) << " a: " << (prev_px & 0x0000'00ff) << " hash: " << calc_index_hash(prev_px); //Debug info
         break;
-      case QOI_OP::INDEX: 
+
+      case QOI_OP::INDEX: //Copy pixel value from array[64] of previously seen pixel values
         prev_px = array[tag & 0b0011'1111]; //Read from array and store as last pixel
         frame_buffer[frame_buffer_index] = prev_px; //Write to frame_buffer
         //Don't calculate hash because it will overwrite itself with itself
         frame_buffer_index++; //Increment pixel index
         std::cout << ' ' << (tag & 0b0011'1111) << " r: " << ((prev_px>>24) & 0x0000'00ff) << " g: " << ((prev_px>>16) & 0x0000'00ff) << " b: " << ((prev_px>>8) & 0x0000'00ff) << " a: " << (prev_px & 0x0000'00ff); //Debug info
         break;
-      case QOI_OP::DIFF: 
-        //TODO: EXPLAIN MEEEEE
+      case QOI_OP::DIFF: //Difference from last color values between -2..1
+        //Shift color channel to rightmost 8 bits
+        //Shift color channel difference to rightmost 2 bits
+        //Add difference and mod 256
+        //Shift back to correct position
         prev_px = ( //Store as last pixel
           ( ( ( ((prev_px & 0xff00'0000)>>24) + ( ((tag & 0b0011'0000)>>4)-2) ) % 256 )<<24)| //Red
           ( ( ( ((prev_px & 0x00ff'0000)>>16) + ( ((tag & 0b0000'1100)>>2)-2) ) % 256 )<<16)| //Green
@@ -130,11 +136,6 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
 
     std::cout << '\n';
   }
-
-  //TODO: Remove
-  //for(int i{0}; i<8192; ++i, ++frame_buffer_index){
-  //  frame_buffer[frame_buffer_index] = 0xffffffff;
-  //}
 
   file.close();
   return true;

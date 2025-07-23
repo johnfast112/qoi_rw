@@ -5,7 +5,7 @@
 bool read_qoi_header(const char* filename, Qoi_Header* header){
   //Open file
   std::ifstream file;
-  file.open(filename);
+  file.open(filename, std::ios::binary);
   if(!file.is_open()){
     std::cerr << filename << " - No loadable images specified.\n";
     return false;

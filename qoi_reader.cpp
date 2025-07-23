@@ -14,7 +14,8 @@ bool read_qoi(const char* filename, uint32_t* frame_buffer, Qoi_Header* header){
   QOI_OP op;
   int frame_buffer_index{0};
 
-  std::ifstream file(filename);
+  std::ifstream file;
+  file.open(filename, std::ios::binary);
   if(!file.is_open()){
     return false;
   }

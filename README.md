@@ -10,8 +10,8 @@ cd qoi_rw
 
 ## Dependencies
 Since this project relies on SDL for it's frontend, it shares all of the dependencies as the SDL project itself. SDL build dependencies can be found [here](https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md). If not already installed, you will also need the following build tools to compile this project:  
-`git`
-`cmake`
+`git`  
+`cmake`  
 
 ## Building
 ### For compiling on unix-like systems:

@@ -57,13 +57,20 @@ int main(int argc, char** argv){
   if(!read_qoi_header(argv[1], &header)){
     return -1;
   }
+  
+  //Allocate space for our framebuffer
+  gFrameBuffer = new uint32_t[header.width * header.height]{0xffffffff};
+
+  //Read our qoi data
+  if(!read_qoi(argv[1], gFrameBuffer, &header)){
+    std::cerr << "There was an error reading the file so the final image might turn out wrong\n";
+  }
 
   //Initialize SDL
   if(!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)){
     return -1;
   }
 
-  gFrameBuffer = new uint32_t[header.width * header.height]{0xffffffff};
   gSDLWindow = SDL_CreateWindow(argv[1], header.width, header.height, 0);
   gSDLRenderer = SDL_CreateRenderer(gSDLWindow, NULL); //Pointer to window, name of driver (or NULL for auto)
   gSDLTexture = SDL_CreateTexture(
@@ -74,10 +81,6 @@ int main(int argc, char** argv){
 
   if(!gFrameBuffer || !gSDLWindow || !gSDLRenderer || !gSDLTexture){ //Something is broken
     return -1;
-  }
-
-  if(!read_qoi(argv[1], gFrameBuffer, &header)){
-    std::cerr << "There was an error reading the file so the final image might turn out wrong\n";
   }
 
   if(!render()){

@@ -24,7 +24,7 @@ make
 An executable named qoi_rw will appear, and when supplied with a `.qoi` file as an argument will display it.
 
 ### For compiling on windows:
-I recommend installing [MSYS2](https://www.msys2.org/) to allow for a compilation process similar to that on a unix-like system. After installing MSYS2 run `pacman -Syu` until you recieve the "there is nothing to do" message to update msys2 and eventually the package manager itself. This is usually twice for me.  
+I recommend installing [MSYS2](https://www.msys2.org/) to allow for a compilation process similar to that on a unix-like system. After installing MSYS2 run `pacman -Syu` until you recieve the "there is nothing to do" message to update msys2 and eventually the package manager itself. This is usually twice for me. It is also important that the version of msys2 that you open does affect the compilation process. For the compilation process specified here, you will need to open the version of msys labeled `MSYS2 UCRT64`.
   
 Run the following command to install all the necessary build tools:
 ```
